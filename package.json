@@ -62,7 +62,7 @@
     "package": "electron-builder",
     "release": "yarn run clean && yarn run i18n && yarn run build-production && yarn run package",
     "test": "jest",
-    "test:watch": "jest --watch",
+    "test:watch": "jest --watch  --verbose false",
     "test:clean": "rm -rf dist-test"
   },
   "jest": {
