@@ -3,10 +3,9 @@ import { isShallowEqual } from 'common/util/LangUtil'
 
 import { AppState, DataState, PreselectionRange, SectionSelectionState, SelectionState } from './StateTypes'
 
-
 export function getPhotoByIndex(state: AppState, sectionId: PhotoSectionId, photoIndex: number): Photo | null {
     const section = getLoadedSectionById(state, sectionId)
-    return (section && section.photoData[section.photoIds[photoIndex]]) || null
+    return (section && section.photoData[section.photoIds[photoIndex]]) || null
 }
 
 export function getPhotoById(state: AppState, sectionId: PhotoSectionId, photoId: PhotoId): Photo | null {
@@ -35,7 +34,6 @@ export function getTagTitles(state: AppState): string[] {
     return cachedTagTitles
 }
 
-
 export const getSectionSelections = (() => {
     const cacheSymbol = Symbol('sectionSelections')
     return function(selection: SelectionState): SectionSelectionState[] {
@@ -48,15 +46,13 @@ export const getSectionSelections = (() => {
     }
 })()
 
-
-export function isPhotoSelected(sectionId: PhotoSectionId, photoId: PhotoId, selection: SelectionState | null): boolean {
+export function isPhotoSelected(sectionId: PhotoSectionId, photoId: PhotoId, selection: SelectionState | null): boolean {
     return !!selection && isPhotoSelectedInSection(photoId, selection.sectionSelectionById[sectionId])
 }
 
-export function isPhotoSelectedInSection(photoId: PhotoId, sectionSelection: SectionSelectionState | null | undefined): boolean {
-    return !!(sectionSelection && (sectionSelection.selectedPhotosById === 'all' || sectionSelection.selectedPhotosById[photoId]))
+export function isPhotoSelectedInSection(photoId: PhotoId, sectionSelection: SectionSelectionState | null | undefined): boolean {
+    return !!(sectionSelection && (sectionSelection.selectedPhotosById === 'all' || sectionSelection.selectedPhotosById[photoId]))
 }
-
 
 export const getPreselectionRange = (() => {
     let prevSubState: any = null
@@ -73,7 +69,7 @@ export const getPreselectionRange = (() => {
             sections,
             selection,
             activePhoto,
-            hoverPhoto,
+            hoverPhoto
         }
         if (!isShallowEqual(prevSubState, subState)) {
             const activeSectionIndex = sections.ids.indexOf(activePhoto.sectionId)
@@ -84,16 +80,12 @@ export const getPreselectionRange = (() => {
             prevSubState = subState
             prevResult = null
 
-            if (activeSectionIndex !== -1 && hoverSectionIndex !== -1 && isLoadedPhotoSection(activeSection) &&
-                isLoadedPhotoSection(hoverSection))
-            {
+            if (activeSectionIndex !== -1 && hoverSectionIndex !== -1 && isLoadedPhotoSection(activeSection) && isLoadedPhotoSection(hoverSection)) {
                 const activePhotoIndex = activeSection.photoIds.indexOf(activePhoto.photoId)
                 const hoverPhotoIndex = hoverSection.photoIds.indexOf(hoverPhoto.photoId)
                 if (activePhotoIndex !== -1 && hoverPhotoIndex !== -1) {
                     const isActivePhotoSelected = isPhotoSelected(activePhoto.sectionId, activePhoto.photoId, selection)
-                    if (activeSectionIndex < hoverSectionIndex ||
-                        (activeSectionIndex === hoverSectionIndex && activePhotoIndex < hoverPhotoIndex))
-                    {
+                    if (activeSectionIndex < hoverSectionIndex || (activeSectionIndex === hoverSectionIndex && activePhotoIndex < hoverPhotoIndex)) {
                         prevResult = {
                             selected: isActivePhotoSelected,
                             startSectionIndex: activeSectionIndex,
@@ -117,7 +109,6 @@ export const getPreselectionRange = (() => {
         return prevResult
     }
 })()
-
 
 export function getInfoPhoto(state: AppState): Photo | undefined {
     const { photoData } = state.info

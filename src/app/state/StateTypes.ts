@@ -1,6 +1,23 @@
-import { PhotoId, TagId, TagById, Device, PhotoSectionId, PhotoSectionById, Settings, UiConfig, PhotoDetail, PhotoWork, ImportProgress, PhotoFilter, PhotoExportOptions, PhotoExportProgress, MetaData, ExifData, Photo} from 'common/CommonTypes'
+import {
+    PhotoId,
+    TagId,
+    TagById,
+    Device,
+    PhotoSectionId,
+    PhotoSectionById,
+    Settings,
+    UiConfig,
+    PhotoDetail,
+    PhotoWork,
+    ImportProgress,
+    PhotoFilter,
+    PhotoExportOptions,
+    PhotoExportProgress,
+    MetaData,
+    ExifData,
+    Photo
+} from 'common/CommonTypes'
 import { FetchState } from 'app/UITypes'
-
 
 export type AppState = {
     navigation: NavigationState
@@ -12,7 +29,6 @@ export type AppState = {
     export: ExportState
 }
 
-
 export type NavigationState = {
     devicePixelRatio: number
     hasWebGLSupport: boolean
@@ -23,7 +39,6 @@ export type NavigationState = {
 
 export type MainViewState = 'settings' | 'detail' | null
 
-
 export type DataState = {
     readonly uiConfig: UiConfig
     readonly settings: Settings
@@ -32,22 +47,21 @@ export type DataState = {
     readonly sections: SectionsState
 }
 
-
 export interface LibraryState {
     readonly display: DisplayState
     readonly filter: PhotoFilter
     /**
      * The active photo. This is the photo on which the last action was performed
      * (like viewing in detail, selecting or deseleting).
-     * 
+     *
      * The active photo ...
      *   - acts as anchor for shift-(de)selection
      *   - has the keyboard focus
      */
-    readonly activePhoto: PhotoLibraryPosition | null
+    readonly activePhoto: PhotoLibraryPosition | null
     /** The photo over which the mouse is currently hovering */
-    readonly hoverPhoto: PhotoLibraryPosition | null
-    readonly selection: SelectionState | null
+    readonly hoverPhoto: PhotoLibraryPosition | null
+    readonly selection: SelectionState | null
 }
 
 export interface DisplayState {
@@ -84,8 +98,7 @@ export interface PreselectionRange {
     endPhotoIndex: number
 }
 
-export type SectionPreselection = 'all' | 'none' | { selected: boolean, startPhotoIndex: number, endPhotoIndex: number }
-
+export type SectionPreselection = 'all' | 'none' | { selected: boolean; startPhotoIndex: number; endPhotoIndex: number }
 
 export type TagsState = {
     readonly ids: TagId[]
@@ -97,13 +110,18 @@ export type DevicesState = Device[]
 export type SectionsState = {
     readonly fetchState: FetchState
     /** The total number of photos (when no filter is applied). Is null before fetched for the first time. */
-    readonly totalPhotoCount: number | null
+    readonly totalPhotoCount: number | null
     /** The number of photos with the current filter applied */
     readonly photoCount: number
     readonly ids: PhotoSectionId[]
     readonly byId: PhotoSectionById
+    getSectionNeighbours(sectionId: PhotoSectionId): SectionNeighbours
 }
 
+export interface SectionNeighbours {
+    prevSection: PhotoSectionId | null
+    nextSection: PhotoSectionId | null
+}
 
 export type DetailState = {
     readonly currentPhoto: {
@@ -114,8 +132,7 @@ export type DetailState = {
         /** Is `null` while loading */
         readonly photoWork: PhotoWork | null
     }
-} | null
-
+} | null
 
 export interface InfoState {
     readonly showInLibrary: boolean
@@ -134,15 +151,13 @@ export interface InfoPhotoData {
     exifData: ExifData | null
 }
 
-
 export type ImportState = {
     readonly progress: ImportProgress
 } | null
-
 
 export type ExportState = {
     readonly photos: PhotoCollection
     readonly exportOptions: PhotoExportOptions
     readonly showRemoveInfoDesc: boolean
-    readonly progress: PhotoExportProgress | null
+    readonly progress: PhotoExportProgress | null
 } | null

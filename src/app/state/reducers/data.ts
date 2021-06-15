@@ -1,20 +1,30 @@
 import { combineReducers } from 'redux'
 
-import { PhotoById, TagId, TagById, LoadedPhotoSection, isLoadedPhotoSection, PhotoSectionId, PhotoSectionById, Settings, UiConfig} from 'common/CommonTypes'
+import { PhotoById, TagId, TagById, LoadedPhotoSection, isLoadedPhotoSection, PhotoSectionId, PhotoSectionById, Settings, UiConfig } from 'common/CommonTypes'
 import { cloneArrayWithItemRemoved } from 'common/util/LangUtil'
 
 import { Action } from 'app/state/ActionType'
 import {
-    INIT, SET_SETTINGS, FETCH_TOTAL_PHOTO_COUNT, FETCH_SECTIONS_REQUEST, FETCH_SECTIONS_SUCCESS, FETCH_SECTIONS_FAILURE,
-    CHANGE_PHOTOS, EMPTY_TRASH,
-    FETCH_TAGS, INIT_DEVICES, ADD_DEVICE, REMOVE_DEVICE, FORGET_SECTION_PHOTOS, FETCH_SECTION_PHOTOS
+    INIT,
+    SET_SETTINGS,
+    FETCH_TOTAL_PHOTO_COUNT,
+    FETCH_SECTIONS_REQUEST,
+    FETCH_SECTIONS_SUCCESS,
+    FETCH_SECTIONS_FAILURE,
+    CHANGE_PHOTOS,
+    EMPTY_TRASH,
+    FETCH_TAGS,
+    INIT_DEVICES,
+    ADD_DEVICE,
+    REMOVE_DEVICE,
+    FORGET_SECTION_PHOTOS,
+    FETCH_SECTION_PHOTOS
 } from 'app/state/actionTypes'
 import { DataState, TagsState, DevicesState, SectionsState } from 'app/state/StateTypes'
 import { FetchState } from 'app/UITypes'
 
-
 const uiConfig = (state: UiConfig | undefined, action: Action): UiConfig => {
-    state = state || {} as UiConfig
+    state = state || ({} as UiConfig)
     switch (action.type) {
         case INIT:
             return action.payload.uiConfig
@@ -23,9 +33,8 @@ const uiConfig = (state: UiConfig | undefined, action: Action): UiConfig => {
     }
 }
 
-
 const settings = (state: Settings | undefined, action: Action): Settings => {
-    state = state || {} as Settings
+    state = state || ({} as Settings)
     switch (action.type) {
         case INIT:
             return action.payload.settings
@@ -35,7 +44,6 @@ const settings = (state: Settings | undefined, action: Action): Settings => {
             return state
     }
 }
-
 
 const initialTagsState: TagsState = {
     ids: [],
@@ -58,16 +66,12 @@ const tags = (state: TagsState = initialTagsState, action: Action): TagsState =>
     }
 }
 
-
 const devices = (state: DevicesState = [], action: Action): DevicesState => {
     switch (action.type) {
         case INIT_DEVICES:
-            return [ ...action.payload.devices ]
+            return [...action.payload.devices]
         case ADD_DEVICE:
-            return [
-                ...state,
-                action.payload.device
-            ]
+            return [...state, action.payload.device]
         case REMOVE_DEVICE:
             return cloneArrayWithItemRemoved(state, action.payload.device, 'id')
         default:
@@ -75,16 +79,27 @@ const devices = (state: DevicesState = [], action: Action): DevicesState => {
     }
 }
 
-
-const initialSectionsState: SectionsState = {
-    fetchState: FetchState.IDLE,
-    totalPhotoCount: null,
-    photoCount: 0,
-    ids: [],
-    byId: {}
+export const getSectionNeighbours = (ids: PhotoSectionId[]) => (sectionId: PhotoSectionId) => {
+    const index = ids.indexOf(sectionId)
+    if (index == -1) return { nextSection: null, prevSection: null }
+    return {
+        nextSection: index <= 0 ? null : ids[index - 1],
+        prevSection: index + 1 < ids.length ? ids[index + 1] : null
+    }
 }
 
-const sections = (state: SectionsState = initialSectionsState, action: Action): SectionsState => {
+function initialSectionsState(): SectionsState {
+    return {
+        fetchState: FetchState.IDLE,
+        totalPhotoCount: null,
+        photoCount: 0,
+        ids: [],
+        byId: {},
+        getSectionNeighbours: getSectionNeighbours([])
+    }
+}
+
+const sections = (state: SectionsState = initialSectionsState(), action: Action): SectionsState => {
     switch (action.type) {
         case FETCH_TOTAL_PHOTO_COUNT:
             return {
@@ -93,7 +108,7 @@ const sections = (state: SectionsState = initialSectionsState, action: Action): 
             }
         case FETCH_SECTIONS_REQUEST:
             return {
-                ...state,  // We keep the old photos while loading
+                ...state, // We keep the old photos while loading
                 fetchState: FetchState.FETCHING
             }
         case FETCH_SECTIONS_SUCCESS: {
@@ -111,12 +126,13 @@ const sections = (state: SectionsState = initialSectionsState, action: Action): 
                 fetchState: FetchState.IDLE,
                 photoCount,
                 ids,
-                byId
+                byId,
+                getSectionNeighbours: getSectionNeighbours(ids)
             }
         }
         case FETCH_SECTIONS_FAILURE:
             return {
-                ...state,  // We keep the old photos
+                ...state, // We keep the old photos
                 fetchState: FetchState.FAILURE
             }
         case FETCH_SECTION_PHOTOS: {
@@ -130,7 +146,7 @@ const sections = (state: SectionsState = initialSectionsState, action: Action): 
                     const nextSection: LoadedPhotoSection = {
                         ...section,
                         ...photoSet,
-                        count: photoSet.photoIds.length,  // Should be correct already, but we set it just in case
+                        count: photoSet.photoIds.length // Should be correct already, but we set it just in case
                     }
                     nextSectionById[sectionId] = nextSection
                 }
@@ -145,13 +161,13 @@ const sections = (state: SectionsState = initialSectionsState, action: Action): 
             let newSectionById = {}
             for (const sectionId of state.ids) {
                 const prevSection = state.byId[sectionId]
-                newSectionById[sectionId] = sectionIdsToForget[sectionId] ?
-                    {
-                        id: prevSection.id,
-                        title: prevSection.title,
-                        count: prevSection.count
-                    } :
-                    prevSection
+                newSectionById[sectionId] = sectionIdsToForget[sectionId]
+                    ? {
+                          id: prevSection.id,
+                          title: prevSection.title,
+                          count: prevSection.count
+                      }
+                    : prevSection
             }
 
             return {
@@ -162,8 +178,8 @@ const sections = (state: SectionsState = initialSectionsState, action: Action): 
         case CHANGE_PHOTOS: {
             const updatedPhotos = action.payload.photos
             const removeUpdatedPhotos = action.payload.update.trashed !== undefined
-                // The trashed state has changed. So either a photos were moved to trash or they were recovered from trash
-                // In both cases the photos should be removed from the currently shown photos
+            // The trashed state has changed. So either a photos were moved to trash or they were recovered from trash
+            // In both cases the photos should be removed from the currently shown photos
 
             let totalPhotoCount = state.totalPhotoCount
             let photoCount = state.photoCount
@@ -171,11 +187,11 @@ const sections = (state: SectionsState = initialSectionsState, action: Action): 
             let newSectionById: PhotoSectionById = {}
             for (const sectionId of state.ids) {
                 const section = state.byId[sectionId]
-                let newSection: LoadedPhotoSection | null = null
+                let newSection: LoadedPhotoSection | null = null
 
                 if (isLoadedPhotoSection(section)) {
                     const photoData = section.photoData
-                    let newPhotoData: PhotoById | null = null
+                    let newPhotoData: PhotoById | null = null
                     for (const updatedPhoto of updatedPhotos) {
                         const prevPhoto = photoData[updatedPhoto.id]
                         if (prevPhoto) {
@@ -211,7 +227,8 @@ const sections = (state: SectionsState = initialSectionsState, action: Action): 
                 totalPhotoCount,
                 photoCount,
                 ids: newSectionIds,
-                byId: newSectionById
+                byId: newSectionById,
+                getSectionNeighbours: getSectionNeighbours(newSectionIds)
             }
         }
         case EMPTY_TRASH:
@@ -219,13 +236,13 @@ const sections = (state: SectionsState = initialSectionsState, action: Action): 
                 ...state,
                 photoCount: 0,
                 ids: [],
-                byId: {}
+                byId: {},
+                getSectionNeighbours: getSectionNeighbours([])
             }
         default:
             return state
     }
 }
-
 
 export const data = combineReducers<DataState>({
     uiConfig,
